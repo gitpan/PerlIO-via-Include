@@ -9,6 +9,8 @@ BEGIN {				# Magic Perl CORE pragma
     }
 }
 
+use strict;
+use warnings;
 use Test::More tests => 10 + (2*12);
 
 BEGIN { use_ok('PerlIO::via::Include') }

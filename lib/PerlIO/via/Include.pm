@@ -3,7 +3,7 @@ package PerlIO::via::Include;
 # Set the version info
 # Make sure we do things by the book from now on
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 use strict;
 
 # Set default before string
@@ -277,6 +277,10 @@ to include other files.  The optional input parameter specifies the regular
 expression that will be used for any files that are opened in the future.
 The default is to use what is (implicitely) specified with L<before> and
 L<after>.
+
+=head1 REQUIRED MODULES
+
+ (none)
 
 =head1 EXAMPLES
 

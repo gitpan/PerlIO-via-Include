@@ -1,6 +1,7 @@
 require 5.008;
 use Config;
 use ExtUtils::MakeMaker;
+eval "use Devel::Required";
 
 warn <<EOD unless $Config{useperlio};
     *** WHOA THERE!!! ***
