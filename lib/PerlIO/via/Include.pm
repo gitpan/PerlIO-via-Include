@@ -3,7 +3,7 @@ package PerlIO::via::Include;
 # Set the version info
 # Make sure we do things by the book from now on
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 use strict;
 
 # Set default before string
@@ -288,9 +288,8 @@ L<PerlIO::via> and any other PerlIO::via modules on CPAN.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 Elizabeth Mattijsen.
-
-This library is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
+Copyright (c) 2002-2003 Elizabeth Mattijsen.  All rights reserved.  This
+library is free software; you can redistribute it and/or modify it under the
+same terms as Perl itself.
 
 =cut

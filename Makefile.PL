@@ -11,9 +11,8 @@ EOD
 
 WriteMakefile (
  NAME		=> "PerlIO::via::Include",
- ($[ >= 5.005) ?
- (AUTHOR	=> 'Elizabeth Mattijsen (liz@dijkmat.nl)',
-  ABSTRACT	=> 'PerlIO Layer for including other files') : (),
+ AUTHOR		=> 'Elizabeth Mattijsen (liz@dijkmat.nl)',
+ ABSTRACT	=> 'PerlIO Layer for including other files',
  VERSION_FROM	=> 'lib/PerlIO/via/Include.pm',
  PREREQ_PM	=> {
                    },

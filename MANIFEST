@@ -6,3 +6,4 @@ VERSION
 Makefile.PL
 lib/PerlIO/via/Include.pm
 t/Include.t
+META.yml                                Module meta-data (added by MakeMaker)
