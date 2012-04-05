@@ -1,90 +1,75 @@
 package PerlIO::via::Include;
 
-# Set the version info
-# Make sure we do things by the book from now on
+$VERSION= '0.04';
 
-$VERSION = '0.03';
+# be as strict as possible
 use strict;
 
-# Set default before string
-# Set default after string
-# Set default regexp string
-
-my $before = '^#include ';
-my $after = "\n";
+# initializations
+my $before= '^#include ';
+my $after=  $/;
 my $regexp;
 
-# Satisfy -require-
-
+# satisfy -require-
 1;
 
-#-----------------------------------------------------------------------
-
+#-------------------------------------------------------------------------------
+#
 # Class methods
-
-#-----------------------------------------------------------------------
+#
+#-------------------------------------------------------------------------------
 #  IN: 1 class (ignored)
 #      2 new value for default before string
 # OUT: 1 current default before string
 
 sub before {
 
-# If new before string specified
-#  Set it
-#  Reset the regular expression
-# Return current default before string
-
-    if (@_ >1) {
-        $before = $_[1];
-        $regexp = undef;
+    # set before string
+    if ( @_ > 1 ) {
+        $before= $_[1];
+        $regexp= undef;
     }
-    $before;
+
+    return $before;
 } #before
 
-#-----------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  IN: 1 class (ignored)
 #      2 new value for default after string
 # OUT: 1 current default after string
 
 sub after {
 
-# If new after string specified
-#  Set it
-#  Reset the regular expression
-# Return current default after string
-
-    if (@_ >1) {
-        $after = $_[1];
-        $regexp = undef;
+    # set after string
+    if ( @_ > 1 ) {
+        $after=  $_[1];
+        $regexp= undef;
     }
-    $after;
+
+    return $after;
 } #after
 
-#-----------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  IN: 1 class (ignored)
 #      2 new value for default regular expression string
 # OUT: 1 current default regular expression string
 
 sub regexp {
 
-# If new regular expression specified
-#  Set it
-#  Reset the before and after strings
-# Return current default regular expression
-
-    $regexp = $_[1] if @_ >1;
-    if (@_ >1) {
-        $regexp = $_[1];
-        $before = $after = undef;
+    # set new regexp
+    if ( @_ > 1 ) {
+        $regexp= $_[1];
+        $before= $after= undef;
     }
-    $regexp;
+
+    return $regexp;
 } #regexp
 
-#-----------------------------------------------------------------------
-
-# Subroutines for standard Perl features
-
-#-----------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+#
+# Standard Perl features
+#
+#-------------------------------------------------------------------------------
 #  IN: 1 class to bless with
 #      2 mode string (ignored)
 #      3 file handle of PerlIO layer below (ignored)
@@ -92,37 +77,30 @@ sub regexp {
 
 sub PUSHED { 
 
-# Die now if strange mode
-# Create the object with the right fields
-
-#    die "Can only read or write with file inclusion" unless $_[1] =~ m#^[rw]$#;
-    bless {
-     regexp => $regexp ? $regexp : qr/$before(.*?)$after/,
-    },$_[0];
+    # create the object with the right attributes
+    return bless {
+      regexp => $regexp ? $regexp : qr/$before(.*?)$after/,
+    } ,$_[0];
 } #PUSHED
 
-#-----------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  IN: 1 instantiated object
 #      2 handle to read from
-# OUT: 1 processed string
+# OUT: 1 processed string or undef
 
 sub FILL {
 
-# Obtain local copy of the regular expression
-# If there is a line to be read from the handle
-#  Perform any inclusion
-#  Return the result
-# Return indicating end reached
-
-    my $regexp = $_[0]->{'regexp'};
-    if (defined( my $line = readline( $_[1] ) )) {
+    # process line if there is one
+    my $regexp= $_[0]->{'regexp'};
+    if ( defined( my $line= readline( $_[1] ) ) ) {
         $line =~ s#$regexp#_include( $1 )#gse;
 	return $line;
     }
-    undef;
+
+    return undef;
 } #FILL
 
-#-----------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  IN: 1 instantiated object
 #      2 buffer to be written
 #      3 handle to write to
@@ -130,60 +108,53 @@ sub FILL {
 
 sub WRITE {
 
-# Obtain local copy of the regular expression
-# For all of the lines in this bunch (includes delimiter at end)
-#  Perform any inclusions
-#  Print the line, return now if failed
-# Return total number of octets handled
+    # process lines, return if failure
+    my $regexp= $_[0]->{'regexp'};
+    foreach ( split( m#(?<=$/)#, $_[1] ) ) {
+	s#$regexp#_include($1)#gse;
 
-    my $regexp = $_[0]->{'regexp'};
-    foreach (split( m#(?<=$/)#,$_[1] )) {
-	s#$regexp#_include( $1 )#gse;
-        return -1 unless print {$_[2]} $_;
+        return -1 if !print { $_[2] } $_;
     }
-    length( $_[1] );
+
+    return length( $_[1] );
 } #WRITE
 
-#-----------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #  IN: 1 class for which to import
 #      2..N parameters passed with -use-
 
 sub import {
+    my ( $class, %param )= @_;
 
-# Obtain the parameters
-# Loop for all the value pairs specified
-
-    my ($class,%param) = @_;
+    # set using mutators
     $class->$_( $param{$_} ) foreach keys %param;
+
+    return;
 } #import
 
-#-----------------------------------------------------------------------
-
-# Internal subroutines
-
-#-----------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+#
+# Internal Subroutines
+#
+#-------------------------------------------------------------------------------
 #  IN: 1 filename to open and include
 # OUT: 1 contents of the whole file
 
 sub _include {
 
-# Attempt to open the handle, return error message if failed
-
+    # huh?
     open( my $handle,"<:via(Include)",$_[0] )
      or return "*** Could not open '$_[0]': $! ***";
 
-# Initialize contents
-# Localize $_ (make sure we can be recursive)
-# Get all the contents of the file line by line
-# Return the contents
-
-    my $contents = '';
-    local( $_ );
+    # get the contents
+    my $contents= '';
+    local($_);
     $contents .= $_ while readline( $handle );
-    $contents;
+
+    return $contents;
 } #_include
 
-#-----------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 __END__
 
@@ -205,6 +176,10 @@ PerlIO::via::Include - PerlIO layer for including other files
  
  open( my $out,'>:via(Include)','file' )
   or die "Can't open file for writing: $!\n";
+
+=head1 VERSION
+
+This documentation describes version 0.04.
 
 =head1 DESCRIPTION
 
@@ -284,7 +259,7 @@ L<after>.
 
 =head1 EXAMPLES
 
-Here will be some examples, some may even be useful.
+Here will be some examples, some might even be useful.
 
 =head1 SEE ALSO
 
@@ -292,8 +267,8 @@ L<PerlIO::via> and any other PerlIO::via modules on CPAN.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002-2003 Elizabeth Mattijsen.  All rights reserved.  This
-library is free software; you can redistribute it and/or modify it under the
-same terms as Perl itself.
+Copyright (c) 2002, 2003, 2004, 2012 Elizabeth Mattijsen.  All rights reserved.
+This library is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
 
 =cut

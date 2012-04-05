@@ -57,7 +57,10 @@ RESULT
 use_ok('PerlIO::via::Include', regexp => qr#<include file="([^"]+)"/># );
 ok( !defined( PerlIO::via::Include->before ),	'check before, #2' );
 ok( !defined( PerlIO::via::Include->after ),	'check after, #2' );
-is( PerlIO::via::Include->regexp,'(?-xism:<include file="([^"]+)"/>)','check regexp, #2' );
+
+# fix different stringification of regexps between Perl versions
+( my $regexp= PerlIO::via::Include->regexp ) =~ s#\?[^:]+#?#;
+is( $regexp, '(?:<include file="([^"]+)"/>)','check regexp, #2' );
 
 test_this( <<EOD, qq(included from 1, <include file="test.2"/>, magically), qq(included <from number="2"/>), <<RESULT );
 <xml><file number="0"/>
@@ -72,6 +75,7 @@ RESULT
 # Remove whatever we created now
 
 ok( unlink( $file,$file1,$file2 ),	'remove test files' );
+1 while unlink( $file,$file2,$file2 ); # multiversioned filesystems
 
 
 sub test_this {
